@@ -7,6 +7,4 @@ RUN yarn install
 
 COPY . .
 
-ENV MONGO_URI=mongodb+srv://luxsaas:yOEDVPSPEePstYks@cryptoprice.e8kfqss.mongodb.net/?retryWrites=true&w=majority
-
 CMD ["yarn", "start"]

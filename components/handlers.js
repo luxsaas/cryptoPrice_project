@@ -7,8 +7,8 @@ const { trackedCoinData, untrackedCoinData } = require("./coinData");
 
 //mongodb setup
 const options = {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
 };
 const endpoint = 'https://api.coingecko.com/api/v3/coins/markets?vs_currency=cad&order=market_cap_desc&per_page=100&page=1&sparkline=false';
 require("dotenv").config();

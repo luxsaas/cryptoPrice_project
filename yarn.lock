@@ -1504,13 +1504,6 @@ jsonfile@^4.0.0:
   optionalDependencies:
     graceful-fs "^4.1.6"
 
-jsonrpc-client@^0.1.1:
-  version "0.1.1"
-  resolved "https://registry.npmjs.org/jsonrpc-client/-/jsonrpc-client-0.1.1.tgz"
-  integrity sha512-S7q05XsIYT6Ug3Dw/xb32bWc70Nt58zDJr1fohnIbwKEcqcpdKw9rRF+tQhFMZciOoSOkYh+Kj4j02ktZLkUTw==
-  dependencies:
-    scoped-http-client ">= 0.9.4"
-
 jsonrpc-lite@^2.2.0:
   version "2.2.0"
   resolved "https://registry.npmjs.org/jsonrpc-lite/-/jsonrpc-lite-2.2.0.tgz"
@@ -2139,11 +2132,6 @@ saslprep@^1.0.3:
   integrity sha512-/MY/PEMbk2SuY5sScONwhUDsV2p77Znkb/q3nSVstq/yQzYJOH/Azh29p9oJLsl3LnQwSvZDKagDGBsBwSooag==
   dependencies:
     sparse-bitfield "^3.0.3"
-
-"scoped-http-client@>= 0.9.4":
-  version "0.11.0"
-  resolved "https://registry.npmjs.org/scoped-http-client/-/scoped-http-client-0.11.0.tgz"
-  integrity sha512-5xvm9yssGrPC+Rm4L9irhqaNCUjnnTfnFSzFu0iDjoX4e6AsPNht3eusaYlzum+pSmyLy2aS73Uis3vumcvjPw==
 
 scrypt-js@^3.0.0, scrypt-js@^3.0.1:
   version "3.0.1"

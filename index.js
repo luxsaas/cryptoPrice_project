@@ -8,9 +8,9 @@ const axios =require('axios');
 require("dotenv").config();
 const port = 5000;
 const {
-    addCrypto,addDefaultCrypto,deleteCrypto} = require("./handlers.js");
+    addCrypto,addDefaultCrypto,deleteCrypto} = require("./components/handlers.js");
 const {
-    getDataFromMongoDB}=require('./handlers.cryptoprice');
+    getDataFromMongoDB}=require('./components/methods');
 
 
 //mongodb setup
@@ -25,7 +25,7 @@ const client = new MongoClient(MONGO_URI,options);
 //when program starts , the database is reset 
 deleteCrypto();
 addDefaultCrypto();
-addCrypto();
+// addCrypto();
 
 const updatePrices = async (req, res) => {
 let ids = [];
@@ -52,7 +52,7 @@ try {
             const filter = { id: coin.id };
             const update = {
                 $push: {
-                    price: { $each: [(coin.current_price).toString()], $slice: -50 },
+                    price:(coin.current_price).toString()
                 },
                 $set: {
                     name:coin.name,
@@ -64,7 +64,7 @@ try {
             try {
                 await client.connect();
                 const result = await db.collection("CryptoList").findOneAndUpdate(filter, update, options);
-                console.log(`Crypto Updated: ${result.value.last_update}`);
+                console.log('Crypto Updated: ${result.value.last_update}');
             } catch (error) {
                 console.error(error);
             }
@@ -81,9 +81,9 @@ try {
     }
 };
 
-setInterval(() => {
-    updatePrices();
-}, 30000);
+// setInterval(() => {
+//     updatePrices();
+// }, 60000);
 
 express()
 .use(bodyParser.json())

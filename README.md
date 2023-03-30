@@ -1,5 +1,5 @@
 # CryptoPrice
-CryptoPrice is a API that updates every minute with the latest price information of cryptocurrencies.
+CryptoPrice is an API that updates every minute with the latest price information of cryptocurrencies.
 
 ## Requirements
 Docker should be installed on Desktop
@@ -9,7 +9,8 @@ Docker should be installed on Desktop
 1) Create a file .env in the root repository and paste the API key from email 
 2) cd into root repository
 3) Use the command "docker build -t dockerapi ." to create the docker image
-3) Use the command "docker-compose up -d" to start the program
+4) Use the command "docker-compose up" to start the program
+5) Use your method of choice to query the API  with JSON-RPC specifications
 
 ## Other Information
 Data Provider: CoinGenko 
@@ -53,15 +54,15 @@ This method serves up historical coin information for a specific coin from the t
 
 Parameters: 
 
-cId - id of the coin (choose from the list above)
-limit - the number of histoiral datapoints to return 
-sort- Whether the result should be sorted by date
+- cId - id of the coin (choose from the list above)
+- limit - the number of historical datapoints to return 
+- sort- Whether the result should be sorted by date
 
 
-#### isTracked
+### ToggleTracked
 This method allows the requestor to instruct your API to enable/disable tracking for a specific coin.
 
 Parameters: 
 
-coinid - id of the coin (choose from the list above)
-tracked - whether the coin should be tracked or untracked
+- coinId - id of the coin (choose from the list above)
+- tracked - whether the coin should be tracked or untracked

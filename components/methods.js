@@ -7,8 +7,8 @@ const { trackedCoinData, untrackedCoinData } = require("./coinData");
 
 //setup mongodb
 const options = {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
 };
 const { MONGO_URI } = process.env;
 const client = new MongoClient(MONGO_URI, options);
@@ -32,6 +32,11 @@ const getDataFromMongoDB = async (req, res) => {
             case 'getCoinInfo':
                 let preresult = [];
                 const { description } = params;
+                if (typeof description!=='string') {
+                    const error = new jsonrpc.JsonRpcError(`Invalid Parameter`, -32000);
+                    const errorResponse = jsonrpc.error(id, error);
+                    return res.status(400).send(errorResponse);
+                    }
 
                 allowedParams = ['description'];
                 extraParams = Object.keys(params).filter(key => !allowedParams.includes(key));
@@ -102,21 +107,7 @@ const getDataFromMongoDB = async (req, res) => {
                 else{
                     name=null;
                 }
-                let sortedPrice = coin[0].price;
-
-                if(sort){
-                    if (sort === 'descending') {
-                        sortedPrice = coin[0].price.reverse();
-                    }
-                    else if(sort ==='ascending'){
-                        sortedPrice = coin[0].price;
-                    }
-                    else{
-                        const error = new jsonrpc.JsonRpcError('The sort parameter is invalid', -32000);
-                        const errorResponse = jsonrpc.error(id, error);
-                        return res.status(400).send(errorResponse);
-                    }
-                }
+                let sortedPrice = coin[0].price.reverse();
                 if (limit) {
                     sortedPrice = sortedPrice.slice(0, limit);
                 } else {
@@ -132,6 +123,17 @@ const getDataFromMongoDB = async (req, res) => {
                         sortedPrice = sortedPrice.slice(-10);
                     }
                 }
+                if(sort){
+                    if (sort === 'descending') {}
+                    else if(sort ==='ascending'){
+                        sortedPrice = sortedPrice.reverse();
+                    }
+                    else{
+                        const error = new jsonrpc.JsonRpcError('The sort parameter is invalid', -32000);
+                        const errorResponse = jsonrpc.error(id, error);
+                        return res.status(400).send(errorResponse);
+                    }
+                }
 
                 result = {
                     id: coin[0].id,
@@ -141,10 +143,10 @@ const getDataFromMongoDB = async (req, res) => {
                 };
                 break;
             //METHOD C
-            case 'isTracked':
-                const { coinid, tracked } = params;
+            case 'ToggleTracked':
+                const { coinId, tracked } = params;
 
-                allowedParams = ['coinid', 'tracked'];
+                allowedParams = ['coinId', 'tracked'];
                 extraParams = Object.keys(params).filter(key => !allowedParams.includes(key));
 
                 if (extraParams.length > 0) {
@@ -152,17 +154,17 @@ const getDataFromMongoDB = async (req, res) => {
                 const errorResponse = jsonrpc.error(id, error);
                 return res.status(400).send(errorResponse);
                 }
-                if(!coinid||tracked===undefined||typeof coinid!='string'||typeof tracked!='boolean'){
+                if(!coinId||tracked===undefined||typeof coinId!='string'||typeof tracked!='boolean'){
                     const error = new jsonrpc.JsonRpcError('A required parameter is missing/invalid', -32000);
                     const errorResponse = jsonrpc.error(id, error);
                     return res.status(400).send(errorResponse);
                 }
-                if (!trackedCoinData.includes(coinid) && !untrackedCoinData.includes(coinid)) {
-                    const error = new jsonrpc.JsonRpcError('This coinid does not exist', -32000);
+                if (!trackedCoinData.includes(coinId) && !untrackedCoinData.includes(coinId)) {
+                    const error = new jsonrpc.JsonRpcError('This coinId does not exist', -32000);
                     const errorResponse = jsonrpc.error(id, error);
                     return res.status(400).send(errorResponse);
                 }
-                const filter = { id: coinid };
+                const filter = { id: coinId };
                 const update = {
                     $set: {
                         tracked:tracked,

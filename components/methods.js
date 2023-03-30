@@ -32,7 +32,7 @@ const getDataFromMongoDB = async (req, res) => {
             case 'getCoinInfo':
                 let preresult = [];
                 const { description } = params;
-                if (typeof description!=='string') {
+                if (typeof description!=='string'&& description!=null) {
                     const error = new jsonrpc.JsonRpcError(`Invalid Parameter`, -32000);
                     const errorResponse = jsonrpc.error(id, error);
                     return res.status(400).send(errorResponse);

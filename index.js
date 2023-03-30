@@ -25,7 +25,7 @@ const client = new MongoClient(MONGO_URI,options);
 //when program starts , the database is reset 
 deleteCrypto();
 addDefaultCrypto();
-// addCrypto();
+addCrypto();
 
 const updatePrices = async (req, res) => {
 let ids = [];
@@ -64,7 +64,7 @@ try {
             try {
                 await client.connect();
                 const result = await db.collection("CryptoList").findOneAndUpdate(filter, update, options);
-                console.log('Crypto Updated: ${result.value.last_update}');
+                console.log(`Crypto Updated: ${result.value.last_update}`);
             } catch (error) {
                 console.error(error);
             }
@@ -81,9 +81,9 @@ try {
     }
 };
 
-// setInterval(() => {
-//     updatePrices();
-// }, 60000);
+setInterval(() => {
+    updatePrices();
+}, 60000);
 
 express()
 .use(bodyParser.json())

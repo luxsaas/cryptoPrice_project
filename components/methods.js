@@ -3,6 +3,7 @@ const { MongoClient } = require("mongodb");
 require("dotenv").config();
 const jsonrpc = require('jsonrpc-lite');
 const moment=require('moment');
+const { trackedCoinData, untrackedCoinData } = require("./coinData");
 
 //setup mongodb
 const options = {
@@ -24,16 +25,29 @@ const getDataFromMongoDB = async (req, res) => {
         await client.connect();
         const db = client.db('CryptoPrice');
         let result;
+        let allowedParams;
+        let extraParams;
         switch (method) {
             //METHOD A
             case 'getCoinInfo':
-                let preresult;
-                if (params.description == undefined || params.description.length == 0) {
+                let preresult = [];
+                const { description } = params;
+
+                allowedParams = ['description'];
+                extraParams = Object.keys(params).filter(key => !allowedParams.includes(key));
+
+                if (extraParams.length > 0) {
+                const error = new jsonrpc.JsonRpcError(`Invalid parameter(s): ${extraParams.join(', ')}`, -32000);
+                const errorResponse = jsonrpc.error(id, error);
+                return res.status(400).send(errorResponse);
+                }
+                const coinIds = description ? description.split(',') : null;
+            
+                if (coinIds === null || coinIds.length === 0) {
                     preresult = await db.collection('CryptoList').find().toArray();
                 } else {
-                    const { description } = params;
-                    const query = { id: description };
-                    const projection = { id: 1, name: 1, symbol: 1, price: 1, last_updated: 1 };
+                    const query = { id: { $in: coinIds } };
+                    const projection = { id: 1, name: 1, symbol: 1, price: 1, last_update: 1, tracked: 1 };
                     preresult = await db.collection('CryptoList').find(query).project(projection).toArray();
                 }
                 if (preresult.length === 0) {
@@ -44,19 +58,32 @@ const getDataFromMongoDB = async (req, res) => {
                 result = preresult.map(coin => {
                     let latest=coin.price.length;
                     let latestPrice = coin.price[latest-1];
+                    let name=coin.name;
+                    if(coin.name!=null){
+                        name=coin.name.toUpperCase();
+                    }
                     if(coin.last_update==null){
-                        return { id: coin.id, name: coin.name.toUpperCase(), symbol: coin.symbol, tracked:coin.tracked };
+                        return { id: coin.id, name: name, symbol: coin.symbol, tracked: coin.tracked };
                     }
                     else{
-                        return { id: coin.id, name: coin.name.toUpperCase(), symbol: coin.symbol, price: latestPrice, last_synced: coin.last_update, tracked:coin.tracked };
+                        return { id: coin.id, name: name, symbol: coin.symbol, price: latestPrice, last_synced: coin.last_update, tracked:coin.tracked };
                     }
                 });
                 break;
             //METHOD B
             case 'getHistoricalInfo':
                 const { cId, limit, sort } = params;
+
+                allowedParams = ['cId', 'limit', 'sort'];
+                extraParams = Object.keys(params).filter(key => !allowedParams.includes(key));
+
+                if (extraParams.length > 0) {
+                const error = new jsonrpc.JsonRpcError(`Invalid parameter(s): ${extraParams.join(', ')}`, -32000);
+                const errorResponse = jsonrpc.error(id, error);
+                return res.status(400).send(errorResponse);
+                }
                 if(cId==null||typeof cId!='string'){
-                    const error = new jsonrpc.JsonRpcError('Missing Coin Id', -32000);
+                    const error = new jsonrpc.JsonRpcError('Missing/Invalid Coin Id', -32000);
                     const errorResponse = jsonrpc.error(id, error);
                     return res.status(400).send(errorResponse);
                 }
@@ -68,13 +95,23 @@ const getDataFromMongoDB = async (req, res) => {
                     const errorResponse = jsonrpc.error(id, error);
                     return res.status(400).send(errorResponse);
                 }
-
+                let name=coin.name;
+                if(coin[0].name!==null){
+                    name=coin[0].name.toUpperCase();
+                }
+                else{
+                    name=null;
+                }
                 let sortedPrice = coin[0].price;
+
                 if(sort){
                     if (sort === 'descending') {
                         sortedPrice = coin[0].price.reverse();
                     }
-                    else if(sort!='ascending' || sort !='descending'){
+                    else if(sort ==='ascending'){
+                        sortedPrice = coin[0].price;
+                    }
+                    else{
                         const error = new jsonrpc.JsonRpcError('The sort parameter is invalid', -32000);
                         const errorResponse = jsonrpc.error(id, error);
                         return res.status(400).send(errorResponse);
@@ -82,23 +119,23 @@ const getDataFromMongoDB = async (req, res) => {
                 }
                 if (limit) {
                     sortedPrice = sortedPrice.slice(0, limit);
+                } else {
+                    sortedPrice = sortedPrice.slice(0, Math.min(sortedPrice.length, 10));
                 }
-                else{
-                    sortedPrice = sortedPrice.slice(0, 10);
+                if (sortedPrice.length < limit) {
+                    sortedPrice = sortedPrice.slice(0, Math.min(sortedPrice.length, 50));
                 }
-                if(coin[0].tracked==false){
-                    if(!coin[0].price){
-                        sortedPrice=[]
+                if (coin[0].tracked == false) {
+                    if (!coin[0].price) {
+                        sortedPrice = [];
+                    } else {
+                        sortedPrice = sortedPrice.slice(-10);
                     }
-                    else{
-                        sortedPrice.slice(-10);
-                    }
                 }
-                const maxLimit = Math.min(limit || 10, 50);
-                sortedPrice = sortedPrice.limit(maxLimit);
+
                 result = {
-                    id:coin[0].id,
-                    name:coin[0].name.toUpperCase(),
+                    id: coin[0].id,
+                    name: name,
                     price: sortedPrice.join(),
                     synced_on: moment.utc().format('LLLL')
                 };
@@ -106,8 +143,22 @@ const getDataFromMongoDB = async (req, res) => {
             //METHOD C
             case 'isTracked':
                 const { coinid, tracked } = params;
-                if(!coinid||!tracked||typeof coinid!='string'||typeof tracked!='boolean'){
+
+                allowedParams = ['coinid', 'tracked'];
+                extraParams = Object.keys(params).filter(key => !allowedParams.includes(key));
+
+                if (extraParams.length > 0) {
+                const error = new jsonrpc.JsonRpcError(`Invalid parameter(s): ${extraParams.join(', ')}`, -32000);
+                const errorResponse = jsonrpc.error(id, error);
+                return res.status(400).send(errorResponse);
+                }
+                if(!coinid||tracked===undefined||typeof coinid!='string'||typeof tracked!='boolean'){
                     const error = new jsonrpc.JsonRpcError('A required parameter is missing/invalid', -32000);
+                    const errorResponse = jsonrpc.error(id, error);
+                    return res.status(400).send(errorResponse);
+                }
+                if (!trackedCoinData.includes(coinid) && !untrackedCoinData.includes(coinid)) {
+                    const error = new jsonrpc.JsonRpcError('This coinid does not exist', -32000);
                     const errorResponse = jsonrpc.error(id, error);
                     return res.status(400).send(errorResponse);
                 }
@@ -122,7 +173,7 @@ const getDataFromMongoDB = async (req, res) => {
                 result = { message: 'ok' };
                 break;
             default:
-                const error = new Error('Method ${method} not found');
+                const error = new Error(`Method ${method} not found`);
                 const errorResponse = jsonrpc.error(id, error);
                 return res.status(404).send(errorResponse);
         }

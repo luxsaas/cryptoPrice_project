@@ -1,53 +1,67 @@
 # CryptoPrice
+CryptoPrice is a API that updates every minute with the latest price information of cryptocurrencies.
 
-# Requirements
+## Requirements
 Docker should be installed on Desktop
 
-# Setup 
+## Setup 
 
-1) Create a file .env in the root repository and past the APIkey from email 
+1) Create a file .env in the root repository and paste the API key from email 
 2) cd into root repository
-3) Use the command docker-compose up -d to start the program
+3) Use the command "docker build -t dockerapi ." to create the docker image
+3) Use the command "docker-compose up -d" to start the program
 
-# Other Information
+## Other Information
 Data Provider: CoinGenko 
 Programming Language: Node.js , Version: 19.8.1
+Database: MongoDB
 
 Available CryptoCurrencies: 
-bitcoin,
-ethereum, 
-tether, 
-luxy, 
-uhive,
-xbn,
-solana,
-adadao,
-akoin,
-scrap, 
-imov,
-nextdao,
-nexon,
-amber,
-treeb,
-hbg,
-uerii,
-ryo,
-a-nation,
-idle
+- bitcoin,
+- ethereum, 
+- tether, 
+- luxy, 
+- uhive,
+- xbn,
+- solana,
+- adadao,
+- akoin,
+- scrap, 
+- imov,
+- nextdao,
+- nexon,
+- amber,
+- treeb,
+- hbg,
+- uerii,
+- ryo,
+- a-nation,
+- idle
 
-# Methods
+## Methods
 
-getCoinInfo - This method will serve up coin information for some or all coins tracked by the API.
+### getCoinInfo 
+This method will serve up coin information for some or all coins tracked by the API.
 
 Parameters: 
 
-OPTIONAL, description - id of the coin (choose from the list above)
-STRING or null - Comma delimited list of coins
+description - id of the coin (choose from the list above)
 
-If you add a parameter, the method will return information of the specified cryptocurrencies.
+### getHistoricalInfo
 
-If there are no paramater, the method will return information of all 20 cryptocurrencies.
+This method serves up historical coin information for a specific coin from the time the request is made.
 
-getHistoricalInfo - This method serves up historical coin information for a specific coin from the time the request is made.
+Parameters: 
 
-isTracked- This method allows the requestor to instruct your API to enable/disable tracking for a specific coin.
+cId - id of the coin (choose from the list above)
+limit - the number of histoiral datapoints to return 
+sort- Whether the result should be sorted by date
+
+
+#### isTracked
+This method allows the requestor to instruct your API to enable/disable tracking for a specific coin.
+
+Parameters: 
+
+coinid - id of the coin (choose from the list above)
+tracked - whether the coin should be tracked or untracked
